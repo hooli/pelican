@@ -82,7 +82,8 @@ _DEFAULT_CONFIG = {'PATH': '.',
                    'MARKDOWN_EXTENSIONS': ['toc', ],
                    'TEMPLATE_PAGES': {},
                    'FILENAME_RESERVE_CHAR_LIST': u'/:', # Windows standards suggest '\/:*?"<>|', '/:' also fine
-                   'FILENAME_RESERVE_CHAR_REPLACEMENT': u''
+                   'FILENAME_RESERVE_CHAR_REPLACEMENT': u'',
+                   'CASE_INSENSITIVE_URL_METADATA': False
                    }
 
 

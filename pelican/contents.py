@@ -188,11 +188,14 @@ class Quote(Page):
 
 class URLWrapper(object):
     _reserved_char_lookup = None
+    _case_insensitive = None
 
     def __init__(self, name, settings):
         if URLWrapper._reserved_char_lookup is None:
             URLWrapper._reserved_char_lookup = dict((ord(char), settings.get('FILENAME_RESERVE_CHAR_REPLACEMENT', u'')) 
                                                     for char in settings.get('FILENAME_RESERVE_CHAR_LIST', u'/:'))
+        if URLWrapper._case_insensitive is None:
+            URLWrapper._case_insensitive = settings.get('CASE_INSENSITIVE_URL_METADATA', False)
         self.name = unicode(name.strip()).translate(URLWrapper._reserved_char_lookup)
         self.slug = self.name
         self.settings = settings
@@ -201,10 +204,16 @@ class URLWrapper(object):
         return self.__dict__
 
     def __hash__(self):
-        return hash(self.name)
+        if URLWrapper._case_insensitive:
+            return hash(self.name.lower())
+        else:
+            return hash(self.name)
 
     def __eq__(self, other):
-        return self.name == unicode(other)
+        if URLWrapper._case_insensitive:
+            return self.name.lower() == unicode(other).lower()
+        else:
+            return self.name == unicode(other)
 
     def __str__(self):
         return str(self.name.encode('utf-8', 'replace'))
