@@ -176,11 +176,11 @@ class ArticlesGenerator(Generator):
             arts.sort(key=attrgetter('date'), reverse=True)
             if self.settings.get('CATEGORY_FEED_ATOM'):
                 writer.write_feed(arts, self.context,
-                                  self.settings['CATEGORY_FEED_ATOM'] % cat)
+                                  unicode(self.settings['CATEGORY_FEED_ATOM']) % cat)
 
             if self.settings.get('CATEGORY_FEED_RSS'):
                 writer.write_feed(arts, self.context,
-                                  self.settings['CATEGORY_FEED_RSS'] % cat,
+                                  unicode(self.settings['CATEGORY_FEED_RSS']) % cat,
                                   feed_type='rss')
 
         if self.settings.get('TAG_FEED_ATOM') \
@@ -189,11 +189,11 @@ class ArticlesGenerator(Generator):
                 arts.sort(key=attrgetter('date'), reverse=True)
                 if self.settings.get('TAG_FEED_ATOM'):
                     writer.write_feed(arts, self.context,
-                                      self.settings['TAG_FEED_ATOM'] % tag)
+                                      unicode(self.settings['TAG_FEED_ATOM']) % tag)
 
                 if self.settings.get('TAG_FEED_RSS'):
                     writer.write_feed(arts, self.context,
-                                      self.settings['TAG_FEED_RSS'] % tag,
+                                      unicode(self.settings['TAG_FEED_RSS']) % tag,
                                       feed_type='rss')
 
         if self.settings.get('TRANSLATION_FEED_ATOM') or \
@@ -226,11 +226,12 @@ class ArticlesGenerator(Generator):
             if template in PAGINATED_TEMPLATES:
                 paginated = {'articles': self.articles, 'dates': self.dates}
             save_as = self.settings.get("%s_SAVE_AS" % template.upper(),
-                                                        '%s.html' % template)
+                                                        u'%s.html' % template)
             if not save_as:
                 continue
 
-            write(save_as, self.get_template(template),
+            # ensure save_as path is unicode, incase variable substitutions made with unicode
+            write(unicode(save_as), self.get_template(template),
                   self.context, blog=True, paginated=paginated,
                   page_name=template)
 
@@ -268,7 +269,8 @@ class ArticlesGenerator(Generator):
     def generate_drafts(self, write):
         """Generate drafts pages."""
         for article in self.drafts:
-            write('drafts/%s.html' % article.slug,
+            # ensure save_as can handle unicode
+            write(u'drafts/%s.html' % article.slug,
                 self.get_template(article.template), self.context,
                 article=article, category=article.category)
 

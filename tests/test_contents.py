@@ -66,7 +66,7 @@ class TestPage(unittest.TestCase):
     def test_slug(self):
         """If a title is given, it should be used to generate the slug."""
         page = Page(**self.page_kwargs)
-        self.assertEqual(page.slug, 'foo-bar')
+        self.assertEqual(page.slug, 'foo bar')
 
     def test_defaultlang(self):
         """If no lang is given, default to the default one."""
@@ -85,12 +85,12 @@ class TestPage(unittest.TestCase):
         """
         # if a title is defined, save_as should be set
         page = Page(**self.page_kwargs)
-        self.assertEqual(page.save_as, "pages/foo-bar.html")
+        self.assertEqual(page.save_as, "pages/foo bar.html")
 
         # if a language is defined, save_as should include it accordingly
         self.page_kwargs['metadata'].update({'lang': 'fr', })
         page = Page(**self.page_kwargs)
-        self.assertEqual(page.save_as, "pages/foo-bar-fr.html")
+        self.assertEqual(page.save_as, "pages/foo bar-fr.html")
 
     def test_datetime(self):
         """If DATETIME is set to a tuple, it should be used to override LOCALE

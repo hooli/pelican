@@ -9,8 +9,8 @@ import time
 
 from codecs import open
 
-from pelican.utils import slugify
-
+# Minimal set of reserve filesystem characters that should be removed (colon is for Mac HFS+)
+_RESERVE_CHAR_LOOKUP = dict((ord(char), u'') for char in u'/:')
 
 def wp2fields(xml):
     """Opens a wordpress XML file, and yield pelican fields"""
@@ -177,7 +177,7 @@ def feed2fields(file):
         author = entry.author if hasattr(entry, "author") else None
         tags = [e['term'] for e in entry.tags] if hasattr(entry, "tags") else None
 
-        slug = slugify(entry.title)
+        slug = entry.title.translate(_RESERVE_CHAR_LOOKUP)
         yield (entry.title, entry.description, slug, date, author, [], tags, "html")
 
 
@@ -223,7 +223,7 @@ def fields2pelican(fields, out_markup, output_path, dircat=False, strip_raw=Fals
 
         # option to put files in directories with categories names
         if dircat and (len(categories) > 0):
-            catname = slugify(categories[0])
+            catname = categories[0].translate(_RESERVE_CHAR_LOOKUP)
             out_filename = os.path.join(output_path, catname, filename+ext)
             if not os.path.isdir(os.path.join(output_path, catname)):
                 os.mkdir(os.path.join(output_path, catname))

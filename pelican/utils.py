@@ -42,24 +42,6 @@ def pelican_open(filename):
     """Open a file and return it's content"""
     return open(filename, encoding='utf-8').read()
 
-
-def slugify(value):
-    """
-    Normalizes string, converts to lowercase, removes non-alpha characters,
-    and converts spaces to hyphens.
-
-    Took from django sources.
-    """
-    value = Markup(value).striptags()
-    if type(value) == unicode:
-        import unicodedata
-        from unidecode import unidecode
-        value = unicode(unidecode(value))
-        value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore')
-    value = unicode(re.sub('[^\w\s-]', '', value).strip().lower())
-    return re.sub('[-\s]+', '-', value)
-
-
 def copy(path, source, destination, destination_path=None, overwrite=False):
     """Copy path from origin to destination.
 

@@ -80,7 +80,9 @@ _DEFAULT_CONFIG = {'PATH': '.',
                    'WEBASSETS': False,
                    'PLUGINS': [],
                    'MARKDOWN_EXTENSIONS': ['toc', ],
-                   'TEMPLATE_PAGES': {}
+                   'TEMPLATE_PAGES': {},
+                   'FILENAME_RESERVE_CHAR_LIST': u'/:', # Windows standards suggest '\/:*?"<>|', '/:' also fine
+                   'FILENAME_RESERVE_CHAR_REPLACEMENT': u''
                    }
 
 

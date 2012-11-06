@@ -10,8 +10,9 @@ from sys import platform, stdin
 
 
 from pelican.settings import _DEFAULT_CONFIG
-from pelican.utils import slugify, truncate_html_words
+from pelican.utils import truncate_html_words
 from pelican import signals
+from urllib import quote
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +24,7 @@ class Page(object):
     """
     mandatory_properties = ('title',)
     default_template = 'page'
+    _reserved_char_lookup = None
 
     def __init__(self, content, metadata=None, settings=None,
                  filename=None):
@@ -35,6 +37,10 @@ class Page(object):
         self.settings = settings
         self._content = content
         self.translations = []
+
+        if Page._reserved_char_lookup is None:
+            Page._reserved_char_lookup = dict((ord(char), settings.get('FILENAME_RESERVE_CHAR_REPLACEMENT', u'')) 
+                                                for char in settings.get('FILENAME_RESERVE_CHAR_LIST', u'/:'))
 
         local_metadata = dict(settings.get('DEFAULT_METADATA', ()))
         local_metadata.update(metadata)
@@ -70,7 +76,7 @@ class Page(object):
 
         # create the slug if not existing, from the title
         if not hasattr(self, 'slug') and hasattr(self, 'title'):
-            self.slug = slugify(self.title)
+            self.slug = unicode(self.title).translate(Page._reserved_char_lookup)
 
         if filename:
             self.filename = filename
@@ -120,15 +126,18 @@ class Page(object):
             'slug': getattr(self, 'slug', ''),
             'lang': getattr(self, 'lang', 'en'),
             'date': getattr(self, 'date', datetime.now()),
-            'author': self.author,
+            'author': getattr(self, 'author', ''),
             'category': getattr(self, 'category',
                 self.settings['DEFAULT_CATEGORY']),
         }
 
     def _expand_settings(self, key):
         fq_key = ('%s_%s' % (self.__class__.__name__, key)).upper()
-        return self.settings[fq_key].format(**self.url_format)
-
+        if key == 'save_as' or key == 'lang_save_as':
+            return unicode(self.settings[fq_key]).format(**self.url_format)
+        else:
+            return quote(unicode(self.settings[fq_key]).format(**self.url_format).encode('utf-8'))
+        
     def get_url_setting(self, key):
         key = key if self.in_default_lang else 'lang_%s' % key
         return self._expand_settings(key)
@@ -178,9 +187,14 @@ class Quote(Page):
 
 
 class URLWrapper(object):
+    _reserved_char_lookup = None
+
     def __init__(self, name, settings):
-        self.name = unicode(name)
-        self.slug = slugify(self.name)
+        if URLWrapper._reserved_char_lookup is None:
+            URLWrapper._reserved_char_lookup = dict((ord(char), settings.get('FILENAME_RESERVE_CHAR_REPLACEMENT', u'')) 
+                                                    for char in settings.get('FILENAME_RESERVE_CHAR_LIST', u'/:'))
+        self.name = unicode(name.strip()).translate(URLWrapper._reserved_char_lookup)
+        self.slug = self.name
         self.settings = settings
 
     def as_dict(self):
@@ -210,7 +224,10 @@ class URLWrapper(object):
             return value
         else:
             if get_page_name:
-                return unicode(value[:value.find('{slug}') + len('{slug}')]).format(**self.as_dict())
+                value = value[:value.find('{slug}') + len('{slug}')]
+
+            if key == 'URL':
+                return quote(unicode(value).format(**self.as_dict()).encode('utf-8'))
             else:
                 return unicode(value).format(**self.as_dict())
 
@@ -224,9 +241,7 @@ class Category(URLWrapper):
 
 
 class Tag(URLWrapper):
-    def __init__(self, name, *args, **kwargs):
-        super(Tag, self).__init__(unicode.strip(name), *args, **kwargs)
-
+    pass
 
 class Author(URLWrapper):
     pass
