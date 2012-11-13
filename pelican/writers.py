@@ -201,7 +201,7 @@ class Writer(object):
                 static = self.settings['STATIC_PATH_PREFIX']
                 relative_path = m.group('path')
                 # if a protcol:// or starts with "//" browser converts to absolute protocol://
-                if relative_path.count('//') > 0:
+                if relative_path[:2] == '//' or relative_path.find('://') > -1:
                     dest_path = relative_path                    
                 elif relative_path[0] == '/':
                     # absolute path from from site root. Add static path if defined
